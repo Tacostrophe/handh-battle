@@ -42,13 +42,12 @@ class Dice {
 
 // существо
 class Creature {
-  name: string;
-  attack: number;
-  defense: number;
-  maxHP: number;
-  currentHP: number;
+  protected name: string;
+  protected attack: number;
+  protected defense: number;
+  protected maxHP: number;
+  protected currentHP: number;
   protected damage: Damage;
-  // protected dead: boolean = false;
 
   constructor (
     name: string,
@@ -103,18 +102,40 @@ class Creature {
     }
   }
 
-  takeDamage(damageValue: number) {
+  isDead(): boolean {
+    return this.currentHP === 0;
+  }
+
+  recieveDamage(damageValue: number) {
     // получение существом урона
     // урон должен быть натуральным числом
     if (!Number.isInteger(damageValue) || damageValue < 1) {
       throw new Error('damage should be a natural number');
     }
     // уменьшение hp с проверкой, чтоб результат не стал меньше нуля
+    const hpBeforeHit = this.currentHP;
     this.currentHP = (this.currentHP > damageValue) ? this.currentHP - damageValue : 0;
+    console.log(
+      `${this.name} recieved damage ${damageValue}\n`
+      + `(${hpBeforeHit}/${this.maxHP}=>${this.currentHP}/${this.maxHP})`
+    );
+    if (this.currentHP === 0) {
+      console.log(`${this.name} died`);
+    }
   }
 
   hit (victim: Creature) {
     // одно существо может ударить другое
+    console.log(`${this.name} trying to hit ${victim.name}`);
+    if (this.isDead()) {
+      console.log('Dead one can\'t hit anyone');
+      return;
+    }
+
+    if (victim.isDead()) {
+      console.log('There\'s no sense to hit dead');
+      return;
+    }
 
     // рассчет модификатора атаки
     // он равен разности атаки атакующего и защиты защищающегося ллюс 1
@@ -127,6 +148,7 @@ class Creature {
     let rollCounter = 0;
     let rollResult: number;
     const dice = new Dice(6);
+    console.log(`rolling ${rollsAmount} dices`);
     // бросаем кубик пока не выпадет 5 или 6 или не кончится количество бросков
     while ((rollCounter < rollsAmount) && !success) {
       rollResult = dice.roll();
@@ -137,10 +159,13 @@ class Creature {
     
     // если удар успешен,
     if (success) {
+      console.log('Success!');
       // то берется произвольное значение из параметра урон атакующего
       const damageValue = Math.floor(Math.random() * (this.damage.max - this.damage.min + 1)) + this.damage.min;
       // и вычитается из здоровья защищающегося
-      victim.takeDamage(damageValue);
+      victim.recieveDamage(damageValue);
+    } else {
+      console.log('Miss!');
     }
   }
 
@@ -155,6 +180,19 @@ class Creature {
   }
 }
 
-const person = new Creature('testPerson', 20);
+const agressor = new Creature('agressor', 25, 1, 200, {min: 100, max: 200});
+const victim = new Creature('victim', 20, 23, 1000);
 
-console.log(`${person}`);
+console.log(agressor.toString());
+console.log(victim.toString());
+
+for(let i = 0; i < 5; i++) {
+  agressor.hit(victim);
+}
+
+victim.hit(agressor);
+
+console.log(agressor.toString());
+console.log(victim.toString());
+
+// console.log(`${person}`);
