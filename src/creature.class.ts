@@ -3,6 +3,7 @@ import { Damage } from './types';
 
 export abstract class Creature {
   // существо
+  protected species = 'Creature';
   protected name: string;
   protected attack: number;
   protected defense: number;
@@ -74,11 +75,11 @@ export abstract class Creature {
       throw new Error('damage should be a natural number');
     }
     // уменьшение hp с проверкой, чтоб результат не стал меньше нуля
-    const hpBeforeHit = this.currentHP;
+    const hpBeforeDamage = this.currentHP;
     this.currentHP = (this.currentHP > damageValue) ? this.currentHP - damageValue : 0;
     console.log(
-      `${this.name} recieved damage ${damageValue}\n`
-      + `(${hpBeforeHit}/${this.maxHP}=>${this.currentHP}/${this.maxHP})`
+      `${this.name} recieved ${damageValue} damage\n`
+      + `(${hpBeforeDamage}/${this.maxHP}=>${this.currentHP}/${this.maxHP})`
     );
     if (this.currentHP === 0) {
       console.log(`${this.name} died`);
@@ -89,12 +90,12 @@ export abstract class Creature {
     // одно существо может ударить другое
     console.log(`${this.name} trying to hit ${victim.name}`);
     if (this.isDead()) {
-      console.log('Dead one can\'t hit anyone');
+      console.log(`${this.species} "${this.name}" can't hit anyone while dead`);
       return;
     }
 
     if (victim.isDead()) {
-      console.log('There\'s no sense to hit dead');
+      console.log(`${this.species} "${this.name}" kicked dead body of ${victim.species} ${victim.name}`);
       return;
     }
 
@@ -132,7 +133,7 @@ export abstract class Creature {
 
   toString() {
     return (
-      `Creature "${this.name}"\n`
+      `${this.species} "${this.name}"\n`
       + `attack: ${this.attack}\n`
       + `defense: ${this.defense}\n`
       + `HP: ${this.currentHP}/${this.maxHP}\n`

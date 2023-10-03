@@ -2,6 +2,8 @@ import { Damage } from './types';
 import { Creature } from './creature.class';
 
 export class Monster extends Creature {
+  protected species = 'Monster';
+  
   constructor (
     name: string,
     attack = 1,
