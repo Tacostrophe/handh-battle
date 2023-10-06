@@ -1,18 +1,16 @@
 import { Dice } from './dice.class';
-import { Damage } from './types';
+import { Damage } from '../types';
 
 export abstract class Creature {
   // существо
-  protected species = 'Creature';
-  protected name: string;
-  protected attack: number;
-  protected defense: number;
-  protected maxHP: number;
-  protected currentHP: number;
-  protected damage: Damage;
+  protected _species = 'Creature';
+  readonly attack: number;
+  readonly defense: number;
+  readonly maxHP: number;
+  protected _currentHP: number;
+  readonly damage: Damage;
 
   constructor (
-    name: string,
     attack = 1,
     defense = 1,
     maxHP = 10,
@@ -20,8 +18,6 @@ export abstract class Creature {
   ) {
     // накопитель сообщений ошибок
     const errors: string[] = [];
-
-    this.name = name;
 
     // у существа есть параметры атака и защита
     // это целые числа от 1 до 30
@@ -40,7 +36,7 @@ export abstract class Creature {
       errors.push('maxHP should be a natural number ');
     }
     this.maxHP = maxHP;
-    this.currentHP = maxHP;
+    this._currentHP = maxHP;
     
     // у существа есть параметр урон
     // это диапазон натуральных чисел
@@ -64,43 +60,47 @@ export abstract class Creature {
     }
   }
 
-  isDead(): boolean {
-    return this.currentHP === 0;
+  toString() {
+    return this._species;
   }
 
-  recieveDamage(damageValue: number) {
+  isDead(): boolean {
+    return this._currentHP === 0;
+  }
+
+  receiveDamage(damageValue: number) {
     // получение существом урона
     // урон должен быть натуральным числом
     if (!Number.isInteger(damageValue) || damageValue < 1) {
       throw new Error('damage should be a natural number');
     }
     // уменьшение hp с проверкой, чтоб результат не стал меньше нуля
-    const hpBeforeDamage = this.currentHP;
-    this.currentHP = (this.currentHP > damageValue) ? this.currentHP - damageValue : 0;
+    const hpBeforeDamage = this._currentHP;
+    this._currentHP = (this._currentHP > damageValue) ? this._currentHP - damageValue : 0;
     console.log(
-      `${this.name} recieved ${damageValue} damage\n`
-      + `(${hpBeforeDamage}/${this.maxHP}=>${this.currentHP}/${this.maxHP})`
+      `${this} received ${damageValue} damage\n`
+      + `(${hpBeforeDamage}/${this.maxHP}=>${this._currentHP}/${this.maxHP})`
     );
-    if (this.currentHP === 0) {
-      console.log(`${this.name} died`);
+    if (this._currentHP === 0) {
+      console.log(`${this} died`);
     }
   }
 
   hit (victim: Creature) {
     // одно существо может ударить другое
-    console.log(`${this.name} trying to hit ${victim.name}`);
+    console.log(`${this} trying to hit ${victim}`);
     if (this.isDead()) {
-      console.log(`${this.species} "${this.name}" can't hit anyone while dead`);
+      console.log(`${this._species} "${this}" can't hit anyone while dead`);
       return;
     }
 
     if (victim.isDead()) {
-      console.log(`${this.species} "${this.name}" kicked dead body of ${victim.species} ${victim.name}`);
+      console.log(`${this._species} "${this}" kicked dead body of ${victim._species} ${victim}`);
       return;
     }
 
     // рассчет модификатора атаки
-    // он равен разности атаки атакующего и защиты защищающегося ллюс 1
+    // он равен разности атаки атакующего и защиты защищающегося плюс 1
     const attackModifier = this.attack - victim.defense + 1;
 
     // успех опеределяется броском N кубиков с цифрами от 1 до 6,
@@ -125,19 +125,19 @@ export abstract class Creature {
       // то берется произвольное значение из параметра урон атакующего
       const damageValue = Math.floor(Math.random() * (this.damage.max - this.damage.min + 1)) + this.damage.min;
       // и вычитается из здоровья защищающегося
-      victim.recieveDamage(damageValue);
+      victim.receiveDamage(damageValue);
     } else {
       console.log('Miss!');
     }
   }
 
-  toString() {
+  get stats(): string {
     return (
-      `${this.species} "${this.name}"\n`
+      `${this}\n`
       + `attack: ${this.attack}\n`
       + `defense: ${this.defense}\n`
-      + `HP: ${this.currentHP}/${this.maxHP}\n`
-      + `damage: ${this.damage.min}-${this.damage.max}\n`
+      + `HP: ${this._currentHP}/${this.maxHP}\n`
+      + `damage: ${this.damage.min}-${this.damage.max}`
     );
   }
 }

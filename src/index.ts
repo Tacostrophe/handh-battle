@@ -1,23 +1,31 @@
-import { Monster } from './monster.class';
-import { Player } from './player.class';
+import { Monster } from './classes/monster.class';
+import { Player } from './classes/player.class';
 
-const agressor = new Player('Player', 25, 1, 200, {min: 100, max: 200});
-const victim = new Monster('Monster', 20, 23, 1000, {min: 500, max: 1000});
+const player = new Player('Bob', 25, 1, 200, {min: 100, max: 200});
+const monster = new Monster(3, 23, 1000, {min: 500, max: 1000});
 
-console.log(agressor.toString());
-console.log(victim.toString());
+console.log(player.stats);
+console.log(monster.stats);
 
-agressor.heal();
+player.receiveDamage(170);
 
-for(let i = 0; i < 5; i++) {
-  agressor.hit(victim);
+for(let _ = 0; _ < 4; _++) {
+  player.heal();
 }
 
-victim.hit(agressor);
+player.receiveDamage(50);
 
-agressor.heal();
+for(let _ = 0; _ < 2; _++) {
+  player.heal();
+}
 
-console.log(agressor.toString());
-console.log(victim.toString());
+for(let i = 0; i < 5; i++) {
+  player.hit(monster);
+}
 
-// console.log(`${person}`);
+monster.hit(player);
+
+player.heal();
+
+console.log(player.stats);
+console.log(monster.stats);
